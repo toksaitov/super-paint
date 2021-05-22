@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Super Paint</title>
+        <script src="app.js"></script>
+        <script src="helpers.js"></script>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <ul class="toolbar">
+            <li><button id="circle">Circle</button></li>
+            <li><button id="rectangle">Rectangle</button></li>
+        </ul>
+        <canvas id="canvas"></canvas>
+        <script>
+            const defaultCircleRadius = 50
+            const defaultRectangleSize = 100
+
+            const shapes = []
+            let selectedShapeType = 'circle'
+
+            function setup(ctx, w, h) {
+                const circleButton = document.getElementById('circle')
+                const rectangleButton = document.getElementById('rectangle')
+
+                circleButton.classList.toggle('selected')
+                circleButton.addEventListener('click', () => {
+                    selectedShapeType = 'circle'
+                    circleButton.classList.add('selected')
+                    rectangleButton.classList.remove('selected')
+                })
+                rectangleButton.addEventListener('click', () => {
+                    selectedShapeType = 'rectangle'
+                    circleButton.classList.remove('selected')
+                    rectangleButton.classList.add('selected')
+                })
+                const canvas = document.getElementById('canvas')
+                canvas.addEventListener('click', event => {
+                    let shape
+                    if (selectedShapeType === 'circle') {
+                        shape = new Circle(event.clientX, event.clientY, defaultCircleRadius)
+                        shape.fillColor = 'red'
+                    } else if (selectedShapeType === 'rectangle') {
+                        shape = new Rectangle(event.clientX, event.clientY, defaultRectangleSize, defaultRectangleSize)
+                        shape.fillColor = 'blue'
+                    }
+                    shapes.push(shape)
+                })
+
+                window.requestAnimationFrame(timestamp => draw(ctx, w, h, timestamp));
+            }
+
+            function draw(ctx, w, h, timestamp) {
+                if (w != window.innerWidth || h != window.innerHeight) {
+                    w = canvas.width  = window.innerWidth
+                    h = canvas.height = window.innerHeight
+                }
+
+                ctx.fillStyle = 'black'
+                ctx.beginPath()
+                ctx.rect(0, 0, w, h)
+                ctx.fill()
+
+                for (const shape of shapes) {
+                    shape.draw(ctx)
+                }
+
+                window.requestAnimationFrame(timestamp => draw(ctx, w, h, timestamp));
+            }
+        </script>
+    </body>
+</html>
