@@ -21,7 +21,7 @@
             </li>
             <li>
                 <label for="size">Size: </label>
-                <input type="range" id="size" min="5" max="500" value="40">
+                <input type="range" id="size" min="5" max="500" value="200">
             </li>
             <li>
                 <label for="lineWidth">Line Width: </label>
@@ -32,7 +32,9 @@
         <script>
             const shapes = []
             let selectedShapeType = 'circle'
-            let drawing = false
+            let selectedShape = null
+            let state = null
+            let prevX, prevY
 
             function createShape(x, y, size, fillColor, borderColor, lineWidth) {
                 let shape
@@ -68,19 +70,37 @@
                 })
                 const canvas = document.getElementById('canvas')
                 canvas.addEventListener('mousedown', event => {
-                    drawing = true
+                    selectedShape = null
+                    state = 'drawing'
+                    for (const shape of shapes) {
+                        if (shape.contains(event.clientX, event.clientY)) {
+                            selectedShape = shape
+                            state = 'dragging'
+                        }
+                    }
 
-                    createShape(
-                        event.clientX,
-                        event.clientY,
-                        sizeRange.value,
-                        fillColorButton.value,
-                        borderColorButton.value,
-                        lineWidthRange.value
-                    )
+                    if (state === 'drawing') {
+                        createShape(
+                            event.clientX,
+                            event.clientY,
+                            sizeRange.value,
+                            fillColorButton.value,
+                            borderColorButton.value,
+                            lineWidthRange.value
+                        )
+                    }
+
+                    prevX = event.clientX
+                    prevY = event.clientY
                 })
                 canvas.addEventListener('mousemove', event => {
-                    if (drawing) {
+                    if (state === 'dragging') {
+                        const dx = event.clientX - prevX
+                        const dy = event.clientY - prevY
+                        selectedShape.move(dx, dy)
+                        prevX = event.clientX
+                        prevY = event.clientY
+                    } else if (state === 'drawing') {
                         createShape(
                             event.clientX,
                             event.clientY,
@@ -92,7 +112,8 @@
                     }
                 })
                 canvas.addEventListener('mouseup', event => {
-                    drawing = false
+                    selectedShape = null
+                    state = null
                 })
 
                 window.requestAnimationFrame(timestamp => draw(ctx, w, h, timestamp));

@@ -24,6 +24,11 @@ class Shape {
     set lineWidth(value) {
         this._lineWidth = value
     }
+
+    move(dx, dy) {
+        this._x += dx
+        this._y += dy
+    }
 }
 
 class Circle extends Shape {
@@ -41,6 +46,13 @@ class Circle extends Shape {
         ctx.arc(this._x, this._y, this._radius, 0, 2 * Math.PI)
         ctx.fill()
         ctx.stroke()
+    }
+
+    contains(x, y) {
+        const dx = x - this._x
+        const dy = y - this._y
+        const length = Math.hypot(dx, dy)
+        return length < this._radius
     }
 }
 
@@ -63,6 +75,13 @@ class Rectangle extends Shape {
         ctx.rect(this._x - this._width / 2, this._y - this._height / 2, this._width, this._height)
         ctx.fill()
         ctx.stroke()
+    }
+
+    contains(x, y) {
+        const halfWidth = this._width * 0.5
+        const halfHeight = this._height * 0.5
+        return x >= this._x - halfWidth && x < this._x + halfWidth &&
+               y >= this._y - halfHeight && y < this._y + halfHeight
     }
 }
 
