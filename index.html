@@ -17,7 +17,7 @@
             </li>
             <li>
                 <label for="borderColor">Border Color: </label>
-                <input type="color" id="borderColor" value="#770000">
+                <input type="color" id="borderColor" value="#ff0000">
             </li>
             <li>
                 <label for="size">Size: </label>
@@ -32,6 +32,20 @@
         <script>
             const shapes = []
             let selectedShapeType = 'circle'
+            let drawing = false
+
+            function createShape(x, y, size, fillColor, borderColor, lineWidth) {
+                let shape
+                if (selectedShapeType === 'circle') {
+                    shape = new Circle(x, y, size * 0.5)
+                } else if (selectedShapeType === 'rectangle') {
+                    shape = new Rectangle(x, y, size, size)
+                }
+                shape.fillColor   = fillColor
+                shape.borderColor = borderColor
+                shape.lineWidth   = lineWidth
+                shapes.push(shape)
+            }
 
             function setup(ctx, w, h) {
                 const circleButton = document.getElementById('circle')
@@ -53,20 +67,32 @@
                     rectangleButton.classList.add('selected')
                 })
                 const canvas = document.getElementById('canvas')
-                canvas.addEventListener('click', event => {
-                    let shape
-                    if (selectedShapeType === 'circle') {
-                        shape = new Circle(event.clientX, event.clientY, sizeRange.value * 0.5)
-                        shape.fillColor   = fillColorButton.value
-                        shape.borderColor = borderColorButton.value
-                        shape.lineWidth   = lineWidthRange.value
-                    } else if (selectedShapeType === 'rectangle') {
-                        shape = new Rectangle(event.clientX, event.clientY, sizeRange.value, sizeRange.value)
-                        shape.fillColor   = fillColorButton.value
-                        shape.borderColor = borderColorButton.value
-                        shape.lineWidth   = lineWidthRange.value
+                canvas.addEventListener('mousedown', event => {
+                    drawing = true
+
+                    createShape(
+                        event.clientX,
+                        event.clientY,
+                        sizeRange.value,
+                        fillColorButton.value,
+                        borderColorButton.value,
+                        lineWidthRange.value
+                    )
+                })
+                canvas.addEventListener('mousemove', event => {
+                    if (drawing) {
+                        createShape(
+                            event.clientX,
+                            event.clientY,
+                            sizeRange.value,
+                            fillColorButton.value,
+                            borderColorButton.value,
+                            lineWidthRange.value
+                        )
                     }
-                    shapes.push(shape)
+                })
+                canvas.addEventListener('mouseup', event => {
+                    drawing = false
                 })
 
                 window.requestAnimationFrame(timestamp => draw(ctx, w, h, timestamp));
