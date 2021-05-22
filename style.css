@@ -1,4 +1,8 @@
-body { margin: 0; overflow: hidden; }
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
+    overflow: hidden; 
+}
 
 .toolbar {
     position: fixed;
@@ -40,4 +44,38 @@ body { margin: 0; overflow: hidden; }
     color: #A00;
     border-color: #700;
     background-color: #100;
+}
+
+.toolbar label {
+    font-size: 0.8em;
+    color: #EEE;
+    margin: 0 0.5em;
+}
+.toolbar input {
+    height: 1.2em;
+    vertical-align: middle;
+    padding: 0.05em;
+}
+.toolbar input[type="color"] {
+    height: 1.0em;
+    border: 0.1rem solid #999;
+    background-color: transparent;
+    vertical-align: middle;
+    border-radius: 0.2rem;
+    padding: 0.05em;
+}
+.toolbar input[type="range"] {
+    appearance: none;
+    height: 0.4em;
+    border: none;
+    background-color: #333;
+    border-radius: 0.5em;
+}
+.toolbar input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    width: 1.8em;
+    height: 0.8em;
+    background-color: #333;
+    border: 0.1em solid #999;
+    border-radius: 0.5em;
 }

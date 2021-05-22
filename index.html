@@ -11,18 +11,35 @@
         <ul class="toolbar">
             <li><button id="circle">Circle</button></li>
             <li><button id="rectangle">Rectangle</button></li>
+            <li>
+                <label for="fillColor">Fill Color: </label>
+                <input type="color" id="fillColor" value="#ff0000">
+            </li>
+            <li>
+                <label for="borderColor">Border Color: </label>
+                <input type="color" id="borderColor" value="#770000">
+            </li>
+            <li>
+                <label for="size">Size: </label>
+                <input type="range" id="size" min="5" max="500" value="40">
+            </li>
+            <li>
+                <label for="lineWidth">Line Width: </label>
+                <input type="range" id="lineWidth" min="0" max="20" value="3">
+            </li>
         </ul>
         <canvas id="canvas"></canvas>
         <script>
-            const defaultCircleRadius = 50
-            const defaultRectangleSize = 100
-
             const shapes = []
             let selectedShapeType = 'circle'
 
             function setup(ctx, w, h) {
                 const circleButton = document.getElementById('circle')
                 const rectangleButton = document.getElementById('rectangle')
+                const fillColorButton = document.getElementById('fillColor')
+                const borderColorButton = document.getElementById('borderColor')
+                const sizeRange = document.getElementById('size')
+                const lineWidthRange = document.getElementById('lineWidth')
 
                 circleButton.classList.toggle('selected')
                 circleButton.addEventListener('click', () => {
@@ -39,11 +56,15 @@
                 canvas.addEventListener('click', event => {
                     let shape
                     if (selectedShapeType === 'circle') {
-                        shape = new Circle(event.clientX, event.clientY, defaultCircleRadius)
-                        shape.fillColor = 'red'
+                        shape = new Circle(event.clientX, event.clientY, sizeRange.value * 0.5)
+                        shape.fillColor   = fillColorButton.value
+                        shape.borderColor = borderColorButton.value
+                        shape.lineWidth   = lineWidthRange.value
                     } else if (selectedShapeType === 'rectangle') {
-                        shape = new Rectangle(event.clientX, event.clientY, defaultRectangleSize, defaultRectangleSize)
-                        shape.fillColor = 'blue'
+                        shape = new Rectangle(event.clientX, event.clientY, sizeRange.value, sizeRange.value)
+                        shape.fillColor   = fillColorButton.value
+                        shape.borderColor = borderColorButton.value
+                        shape.lineWidth   = lineWidthRange.value
                     }
                     shapes.push(shape)
                 })

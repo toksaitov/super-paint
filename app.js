@@ -1,16 +1,28 @@
 class Shape {
     constructor(x, y, logger) {
-        this.x = x
-        this.y = y
-        this.fillColor = 'white'
-        this.borderColor = 'black'
-        this.lineWidth = 5
+        this._x = x
+        this._y = y
+        this._fillColor = 'white'
+        this._borderColor = 'black'
+        this._lineWidth = 5
     }
 
     draw(ctx) {
-        ctx.fillStyle = this.fillColor
-        ctx.strokeStyle = this.borderColor
-        ctx.lineWidth = this.lineWidth
+        ctx.fillStyle   = this._fillColor
+        ctx.strokeStyle = this._borderColor
+        ctx.lineWidth   = this._lineWidth
+    }
+
+    set fillColor(value) {
+        this._fillColor = value
+    }
+
+    set borderColor(value) {
+        this._borderColor = value
+    }
+
+    set lineWidth(value) {
+        this._lineWidth = value
     }
 }
 
@@ -20,13 +32,13 @@ class Circle extends Shape {
         if (radius < 0) {
             throw new Error("Radius for a circle can't be negative.")
         }
-        this.radius = radius
+        this._radius = radius
     }
 
     draw(ctx) {
         super.draw(ctx)
         ctx.beginPath()
-        ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI)
+        ctx.arc(this._x, this._y, this._radius, 0, 2 * Math.PI)
         ctx.fill()
         ctx.stroke()
     }
@@ -41,14 +53,14 @@ class Rectangle extends Shape {
         if (height < 0) {
             throw new Error("Height for a rect. can't be negative.")
         }
-        this.width = width
-        this.height = height
+        this._width = width
+        this._height = height
     }
 
     draw(ctx) {
         super.draw(ctx)
         ctx.beginPath()
-        ctx.rect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height)
+        ctx.rect(this._x - this._width / 2, this._y - this._height / 2, this._width, this._height)
         ctx.fill()
         ctx.stroke()
     }
