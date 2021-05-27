@@ -27,10 +27,14 @@
                 <label for="lineWidth">Line Width: </label>
                 <input type="range" id="lineWidth" min="0" max="20" value="3">
             </li>
+            <li><button id="save">Save</button></li>
+            <li>
+                <input type="file" id="open" accept=".svg">
+            </li>
         </ul>
         <canvas id="canvas"></canvas>
         <script>
-            const shapes = []
+            let shapes = []
             let selectedShapeType = 'circle'
             let selectedShape = null
             let state = null
@@ -56,6 +60,8 @@
                 const borderColorButton = document.getElementById('borderColor')
                 const sizeRange = document.getElementById('size')
                 const lineWidthRange = document.getElementById('lineWidth')
+                const saveButton = document.getElementById('save')
+                const openButton = document.getElementById('open')
 
                 circleButton.classList.toggle('selected')
                 circleButton.addEventListener('click', () => {
@@ -68,6 +74,72 @@
                     circleButton.classList.remove('selected')
                     rectangleButton.classList.add('selected')
                 })
+                saveButton.addEventListener('click', () => {
+                    const svgDoc =
+                        `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">\n`         +
+                        `${shapes.reduce((result, shape) => result + `    ${shape.toSVG()}\n`, '')}` +
+                        `</svg>`
+
+                    const saveLink = document.createElement('a')
+                    saveLink.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(svgDoc))
+                    saveLink.setAttribute('download', 'picture.svg')
+                    saveLink.style.display = 'none'
+                    document.body.appendChild(saveLink)
+                    saveLink.click()
+                    document.body.removeChild(saveLink)
+                })
+                openButton.addEventListener('change', () => {
+                    const file = openButton.files[0]
+                    if (file && file.type === 'image/svg+xml') {
+                        const obj = document.createElement('object')
+                        obj.data = URL.createObjectURL(file)
+                        obj.onload = () => {
+                            URL.revokeObjectURL(obj.data)
+
+                            const svg = obj.getSVGDocument().childNodes[0]
+                            const svgShapes = svg.querySelectorAll('rect,circle')
+
+                            shapes = []
+                            for (const svgShape of svgShapes) {
+                                let shape
+                                if (svgShape.tagName === 'rect') {
+                                    const x = parseFloat(svgShape.getAttribute('x'))
+                                    const y = parseFloat(svgShape.getAttribute('y'))
+                                    const width = parseFloat(svgShape.getAttribute('width'))
+                                    const height = parseFloat(svgShape.getAttribute('height'))
+                                    const fillColor = svgShape.getAttribute('fill')
+                                    const borderColor = svgShape.getAttribute('stroke')
+                                    const lineWidth = parseFloat(svgShape.getAttribute('stroke-width'))
+
+                                    shape = new Rectangle(x, y, width, height)
+                                    shape.fillColor   = fillColor
+                                    shape.borderColor = borderColor
+                                    shape.lineWidth   = lineWidth
+                                } else if (svgShape.tagName === 'circle') {
+                                    const x = parseFloat(svgShape.getAttribute('cx'))
+                                    const y = parseFloat(svgShape.getAttribute('cy'))
+                                    const radius = parseFloat(svgShape.getAttribute('r'))
+                                    const fillColor = svgShape.getAttribute('fill')
+                                    const borderColor = svgShape.getAttribute('stroke')
+                                    const lineWidth = parseFloat(svgShape.getAttribute('stroke-width'))
+
+                                    shape = new Circle(x, y, radius)
+                                    shape.fillColor   = fillColor
+                                    shape.borderColor = borderColor
+                                    shape.lineWidth   = lineWidth
+                                }
+
+                                if (shape) {
+                                    shapes.push(shape)
+                                }
+                            }
+
+                            document.body.removeChild(obj)
+                        }
+                        document.body.appendChild(obj)
+                    }
+                })
+
                 const canvas = document.getElementById('canvas')
                 canvas.addEventListener('mousedown', event => {
                     selectedShape = null

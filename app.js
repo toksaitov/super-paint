@@ -1,5 +1,5 @@
 class Shape {
-    constructor(x, y, logger) {
+    constructor(x, y) {
         this._x = x
         this._y = y
         this._fillColor = 'white'
@@ -54,6 +54,10 @@ class Circle extends Shape {
         const length = Math.hypot(dx, dy)
         return length < this._radius
     }
+
+    toSVG() {
+        return `<circle cx="${this._x}" cy="${this._y}" r="${this._radius}" fill="${this._fillColor}" stroke="${this._borderColor}" stroke-width="${this._lineWidth}" />`
+    }
 }
 
 class Rectangle extends Shape {
@@ -82,6 +86,10 @@ class Rectangle extends Shape {
         const halfHeight = this._height * 0.5
         return x >= this._x - halfWidth && x < this._x + halfWidth &&
                y >= this._y - halfHeight && y < this._y + halfHeight
+    }
+
+    toSVG() {
+        return `<rect x="${this._x}" y="${this._y}" width="${this._width}" height="${this._height}" fill="${this._fillColor}" stroke="${this._borderColor}" stroke-width="${this._lineWidth}" />`
     }
 }
 
