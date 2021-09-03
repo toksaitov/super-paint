@@ -1,81 +1,93 @@
 body {
     font-family: Arial, Helvetica, sans-serif;
     margin: 0;
-    overflow: hidden; 
+    overflow: hidden;
 }
 
 .toolbar {
-    position: fixed;
-    margin: 2em;
-    padding: 0.5em 0.8em;
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255,255,255,0.1);
     border-radius: 1em;
+    margin: 2em;
+    padding: .5em .8em;
+    position: fixed;
 }
 .toolbar li {
     display: inline;
     list-style: none;
 }
 
-.toolbar button {
-    font-size: 0.8em;
-    width: 5rem;
-    color: #EEE;
+.toolbar button,
+.toolbar label[for="open"] {
     background-color: #333;
-    border: 0.1rem solid #999;
+    border: .1rem solid #999;
     border-radius: 1rem;
+    color: #EEE;
+    font-size: .8em;
+    width: 9rem;
 }
-.toolbar button:hover {
-    background-color: #222
+.toolbar button:hover,
+.toolbar label[for="open"]:hover {
+    background-color: #222;
 }
-.toolbar button:active {
-    color: #AAA;
-    border-color: #777;
+.toolbar button:active,
+.toolbar label[for="open"]:active {
     background-color: #111;
+    border-color: #777;
+    color: #AAA;
 }
+
 .toolbar button.selected {
     background-color: #300;
-    border: 0.1rem solid #900;
+    border: .1rem solid #900;
     border-radius: 1rem;
 }
 .toolbar button.selected:hover {
-    background-color: #200
+    background-color: #200;
 }
 .toolbar button.selected:active {
-    color: #A00;
-    border-color: #700;
     background-color: #100;
+    border-color: #700;
+    color: #A00;
 }
 
 .toolbar label {
-    font-size: 0.8em;
     color: #EEE;
-    margin: 0 0.5em;
+    font-size: .8em;
+    margin: 0 .5em;
 }
 .toolbar input {
     height: 1.2em;
+    padding: .05em;
     vertical-align: middle;
-    padding: 0.05em;
 }
 .toolbar input[type="color"] {
-    height: 1.0em;
-    border: 0.1rem solid #999;
     background-color: transparent;
+    border: .1rem solid #999;
+    border-radius: .2rem;
+    height: 1em;
+    padding: .05em;
     vertical-align: middle;
-    border-radius: 0.2rem;
-    padding: 0.05em;
 }
 .toolbar input[type="range"] {
     appearance: none;
-    height: 0.4em;
-    border: none;
     background-color: #333;
-    border-radius: 0.5em;
+    border: none;
+    border-radius: .5em;
+    height: .4em;
 }
 .toolbar input[type="range"]::-webkit-slider-thumb {
     appearance: none;
-    width: 1.8em;
-    height: 0.8em;
     background-color: #333;
-    border: 0.1em solid #999;
-    border-radius: 0.5em;
+    border: .1em solid #999;
+    border-radius: .5em;
+    height: .8em;
+    width: 1.8em;
+}
+
+.toolbar label[for="open"] {
+    display: inline-block;
+    text-align: center;
+}
+.toolbar input[type="file"] {
+    display: none;
 }

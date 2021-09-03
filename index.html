@@ -2,211 +2,174 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
-        <title>Super Paint</title>
-        <script src="app.js"></script>
-        <script src="helpers.js"></script>
+        <title>Super Paint 9000</title>
         <link rel="stylesheet" href="style.css">
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const canvas = document.getElementById('canvas')
+                const width  = canvas.width  = window.innerWidth
+                const height = canvas.height = window.innerHeight
+                setup(canvas.getContext('2d'), width, height)
+            })
+        </script>
     </head>
     <body>
         <ul class="toolbar">
             <li><button id="circle">Circle</button></li>
             <li><button id="rectangle">Rectangle</button></li>
             <li>
-                <label for="fillColor">Fill Color: </label>
-                <input type="color" id="fillColor" value="#ff0000">
+                <label for="size">Size:</label>
+                <input type="range" id="size" min="10" max="100">
             </li>
             <li>
-                <label for="borderColor">Border Color: </label>
-                <input type="color" id="borderColor" value="#ff0000">
+                <label for="color">Color:</label>
+                <input type="color" id="color" value="#ff0000">
             </li>
             <li>
-                <label for="size">Size: </label>
-                <input type="range" id="size" min="5" max="500" value="200">
-            </li>
-            <li>
-                <label for="lineWidth">Line Width: </label>
-                <input type="range" id="lineWidth" min="0" max="20" value="3">
+                <label for="open">Open</label>
+                <input type="file" id="open">
             </li>
             <li><button id="save">Save</button></li>
-            <li>
-                <input type="file" id="open" accept=".svg">
-            </li>
         </ul>
         <canvas id="canvas"></canvas>
+        <script src="app.js"></script>
         <script>
             let shapes = []
-            let selectedShapeType = 'circle'
-            let selectedShape = null
-            let state = null
-            let prevX, prevY
+            let newShapeType = 'circle'
 
-            function createShape(x, y, size, fillColor, borderColor, lineWidth) {
-                let shape
-                if (selectedShapeType === 'circle') {
-                    shape = new Circle(x, y, size * 0.5)
-                } else if (selectedShapeType === 'rectangle') {
-                    shape = new Rectangle(x, y, size, size)
-                }
-                shape.fillColor   = fillColor
-                shape.borderColor = borderColor
-                shape.lineWidth   = lineWidth
-                shapes.push(shape)
-            }
-
-            function setup(ctx, w, h) {
-                const circleButton = document.getElementById('circle')
+            function setup(ctx, width, height) {
+                const circleButton    = document.getElementById('circle')
                 const rectangleButton = document.getElementById('rectangle')
-                const fillColorButton = document.getElementById('fillColor')
-                const borderColorButton = document.getElementById('borderColor')
-                const sizeRange = document.getElementById('size')
-                const lineWidthRange = document.getElementById('lineWidth')
-                const saveButton = document.getElementById('save')
+                const sizeSlider   = document.getElementById('size')
+                const colorChooser = document.getElementById('color')
                 const openButton = document.getElementById('open')
+                const saveButton = document.getElementById('save')
 
-                circleButton.classList.toggle('selected')
-                circleButton.addEventListener('click', () => {
-                    selectedShapeType = 'circle'
+                circleButton.classList.add('selected')
+                circleButton.addEventListener('click', event => {
                     circleButton.classList.add('selected')
                     rectangleButton.classList.remove('selected')
+                    newShapeType = 'circle'
                 })
-                rectangleButton.addEventListener('click', () => {
-                    selectedShapeType = 'rectangle'
+                rectangleButton.addEventListener('click', event => {
                     circleButton.classList.remove('selected')
                     rectangleButton.classList.add('selected')
+                    newShapeType = 'rectangle'
                 })
-                saveButton.addEventListener('click', () => {
-                    const svgDoc =
-                        `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">\n`         +
-                        `${shapes.reduce((result, shape) => result + `    ${shape.toSVG()}\n`, '')}` +
+
+                openButton.addEventListener('change', event => {
+                    const file = openButton.files[0]
+                    if (file.type !== 'image/svg+xml') {
+                        return
+                    }
+
+                    const fakeObject = document.createElement('object')
+                    fakeObject.data = URL.createObjectURL(file)
+                    fakeObject.addEventListener('load', () => {
+                        URL.revokeObjectURL(fakeObject.data)
+
+                        shapes = []
+
+                        const svg = fakeObject.getSVGDocument().childNodes[0]
+                        const svgShapes = svg.querySelectorAll('rect,circle')
+                        for (const shape of svgShapes) {
+                            let newShape
+                            if (shape.tagName === 'rect') {
+                                const x = parseFloat(shape.getAttribute('x'))
+                                const y = parseFloat(shape.getAttribute('y'))
+                                const width = parseFloat(shape.getAttribute('width'))
+                                const height = parseFloat(shape.getAttribute('height'))
+                                const color = shape.getAttribute('fill')
+
+                                newShape = new Rectangle(x, y, color, width, height)
+                            } else if (shapes.tagName === 'circle') {
+                                const x = parseFloat(shape.getAttribute('cx'))
+                                const y = parseFloat(shape.getAttribute('cy'))
+                                const radius = parseFloat(shape.getAttribute('r'))
+                                const color = shape.getAttribute('fill')
+
+                                newShape = new Circle(x, y, color, radius)
+                            }
+                            if (newShape) {
+                                shapes.push(newShape)
+                            }
+                        }
+                        document.body.removeChild(fakeObject)
+                    })
+                    document.body.appendChild(fakeObject)
+                })
+                saveButton.addEventListener('click', event => {
+                    const fileContent =
+                        `<svg viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">\n` +
+                        `${shapes.reduce((result, shape) => `${result}    ${shape.toSVG()}\n`, '')}`  +
                         `</svg>`
 
-                    const saveLink = document.createElement('a')
-                    saveLink.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(svgDoc))
-                    saveLink.setAttribute('download', 'picture.svg')
-                    saveLink.style.display = 'none'
-                    document.body.appendChild(saveLink)
-                    saveLink.click()
-                    document.body.removeChild(saveLink)
-                })
-                openButton.addEventListener('change', () => {
-                    const file = openButton.files[0]
-                    if (file && file.type === 'image/svg+xml') {
-                        const obj = document.createElement('object')
-                        obj.data = URL.createObjectURL(file)
-                        obj.onload = () => {
-                            URL.revokeObjectURL(obj.data)
-
-                            const svg = obj.getSVGDocument().childNodes[0]
-                            const svgShapes = svg.querySelectorAll('rect,circle')
-
-                            shapes = []
-                            for (const svgShape of svgShapes) {
-                                let shape
-                                if (svgShape.tagName === 'rect') {
-                                    const x = parseFloat(svgShape.getAttribute('x'))
-                                    const y = parseFloat(svgShape.getAttribute('y'))
-                                    const width = parseFloat(svgShape.getAttribute('width'))
-                                    const height = parseFloat(svgShape.getAttribute('height'))
-                                    const fillColor = svgShape.getAttribute('fill')
-                                    const borderColor = svgShape.getAttribute('stroke')
-                                    const lineWidth = parseFloat(svgShape.getAttribute('stroke-width'))
-
-                                    shape = new Rectangle(x, y, width, height)
-                                    shape.fillColor   = fillColor
-                                    shape.borderColor = borderColor
-                                    shape.lineWidth   = lineWidth
-                                } else if (svgShape.tagName === 'circle') {
-                                    const x = parseFloat(svgShape.getAttribute('cx'))
-                                    const y = parseFloat(svgShape.getAttribute('cy'))
-                                    const radius = parseFloat(svgShape.getAttribute('r'))
-                                    const fillColor = svgShape.getAttribute('fill')
-                                    const borderColor = svgShape.getAttribute('stroke')
-                                    const lineWidth = parseFloat(svgShape.getAttribute('stroke-width'))
-
-                                    shape = new Circle(x, y, radius)
-                                    shape.fillColor   = fillColor
-                                    shape.borderColor = borderColor
-                                    shape.lineWidth   = lineWidth
-                                }
-
-                                if (shape) {
-                                    shapes.push(shape)
-                                }
-                            }
-
-                            document.body.removeChild(obj)
-                        }
-                        document.body.appendChild(obj)
-                    }
+                    const fakeLink = document.createElement('a')
+                    fakeLink.setAttribute('href', `data:text/plain;charset=utf-8,${encodeURIComponent(fileContent)}`)
+                    fakeLink.setAttribute('download', 'result.svg')
+                    fakeLink.style.display = 'none'
+                    document.body.appendChild(fakeLink)
+                    fakeLink.click()
+                    document.body.removeChild(fakeLink)
                 })
 
                 const canvas = document.getElementById('canvas')
-                canvas.addEventListener('mousedown', event => {
-                    selectedShape = null
-                    state = 'drawing'
+                canvas.addEventListener('click', event => {
+                    let shouldDraw = true
                     for (const shape of shapes) {
                         if (shape.contains(event.clientX, event.clientY)) {
-                            selectedShape = shape
-                            state = 'dragging'
+                            shape.isSelected = !shape.isSelected
+                            shouldDraw = false
                         }
                     }
 
-                    if (state === 'drawing') {
-                        createShape(
-                            event.clientX,
-                            event.clientY,
-                            sizeRange.value,
-                            fillColorButton.value,
-                            borderColorButton.value,
-                            lineWidthRange.value
-                        )
-                    }
-
-                    prevX = event.clientX
-                    prevY = event.clientY
-                })
-                canvas.addEventListener('mousemove', event => {
-                    if (state === 'dragging') {
-                        const dx = event.clientX - prevX
-                        const dy = event.clientY - prevY
-                        selectedShape.move(dx, dy)
-                        prevX = event.clientX
-                        prevY = event.clientY
-                    } else if (state === 'drawing') {
-                        createShape(
-                            event.clientX,
-                            event.clientY,
-                            sizeRange.value,
-                            fillColorButton.value,
-                            borderColorButton.value,
-                            lineWidthRange.value
-                        )
+                    if (shouldDraw) {
+                        let shape
+                        if (newShapeType === 'circle') {
+                            shape = new Circle(
+                                event.clientX,
+                                event.clientY,
+                                colorChooser.value,
+                                parseFloat(sizeSlider.value)
+                            )
+                        } else if (newShapeType === 'rectangle') {
+                            shape = new Rectangle(
+                                event.clientX,
+                                event.clientY,
+                                colorChooser.value,
+                                parseFloat(sizeSlider.value * 2),
+                                parseFloat(sizeSlider.value * 2)
+                            )
+                        }
+                        shapes.push(shape)
                     }
                 })
-                canvas.addEventListener('mouseup', event => {
-                    selectedShape = null
-                    state = null
+
+                document.addEventListener('keydown', event => {
+                    if (event.code === 'Delete') {
+                        shapes = shapes.filter(shape => shape.isSelected !== true)
+                    }
                 })
 
-                window.requestAnimationFrame(timestamp => draw(ctx, w, h, timestamp));
+                window.requestAnimationFrame(timestamp => draw(ctx, width, height, timestamp))
             }
 
-            function draw(ctx, w, h, timestamp) {
-                if (w != window.innerWidth || h != window.innerHeight) {
-                    w = canvas.width  = window.innerWidth
-                    h = canvas.height = window.innerHeight
+            function draw(ctx, width, height, timestamp) {
+                if (width != window.innerWidth || height != window.innerHeight) {
+                    width = canvas.width  = window.innerWidth
+                    height = canvas.height = window.innerHeight
                 }
 
                 ctx.fillStyle = 'black'
                 ctx.beginPath()
-                ctx.rect(0, 0, w, h)
+                ctx.rect(0, 0, width, height)
                 ctx.fill()
 
                 for (const shape of shapes) {
                     shape.draw(ctx)
                 }
 
-                window.requestAnimationFrame(timestamp => draw(ctx, w, h, timestamp));
+                window.requestAnimationFrame(timestamp => draw(ctx, width, height, timestamp))
             }
         </script>
     </body>

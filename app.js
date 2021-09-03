@@ -1,101 +1,81 @@
 class Shape {
-    constructor(x, y) {
-        this._x = x
-        this._y = y
-        this._fillColor = 'white'
-        this._borderColor = 'black'
-        this._lineWidth = 5
+    constructor(x, y, color) {
+        this.x = x
+        this.y = y
+        this.color = color
+        this.isSelected = false
     }
 
-    draw(ctx) {
-        ctx.fillStyle   = this._fillColor
-        ctx.strokeStyle = this._borderColor
-        ctx.lineWidth   = this._lineWidth
-    }
-
-    set fillColor(value) {
-        this._fillColor = value
-    }
-
-    set borderColor(value) {
-        this._borderColor = value
-    }
-
-    set lineWidth(value) {
-        this._lineWidth = value
-    }
-
-    move(dx, dy) {
-        this._x += dx
-        this._y += dy
+    move(newX, newY) {
+        this.x = newX
+        this.y = newY
     }
 }
 
 class Circle extends Shape {
-    constructor(x, y, radius) {
-        super(x, y)
-        if (radius < 0) {
-            throw new Error("Radius for a circle can't be negative.")
-        }
-        this._radius = radius
-    }
+    constructor(x, y, color, radius) {
+        super(x, y, color)
 
-    draw(ctx) {
-        super.draw(ctx)
-        ctx.beginPath()
-        ctx.arc(this._x, this._y, this._radius, 0, 2 * Math.PI)
-        ctx.fill()
-        ctx.stroke()
+        this.radius = radius
     }
 
     contains(x, y) {
-        const dx = x - this._x
-        const dy = y - this._y
-        const length = Math.hypot(dx, dy)
-        return length < this._radius
+        const dx = x - this.x
+        const dy = y - this.y
+        return Math.hypot(dx, dy) <= this.radius
+    }
+
+    draw(ctx) {
+        ctx.fillStyle = this.color
+        ctx.beginPath()
+        ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI)
+        ctx.fill()
+        if (this.isSelected) {
+            ctx.strokeStyle = 'white'
+            ctx.setLineDash([3])
+            ctx.lineWidth = 3
+            ctx.beginPath()
+            ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI)
+            ctx.stroke()
+        }
     }
 
     toSVG() {
-        return `<circle cx="${this._x}" cy="${this._y}" r="${this._radius}" fill="${this._fillColor}" stroke="${this._borderColor}" stroke-width="${this._lineWidth}" />`
+        return `<circle cx="${this.x}" cy="${this.y}" r="${this.radius}" fill="${this.color}" />`
     }
 }
 
 class Rectangle extends Shape {
-    constructor(x, y, width, height) {
-        super(x, y)
-        if (width < 0) {
-            throw new Error("Width for a rect. can't be negative.")
-        }
-        if (height < 0) {
-            throw new Error("Height for a rect. can't be negative.")
-        }
-        this._width = width
-        this._height = height
-    }
+    constructor(x, y, color, width, height) {
+        super(x, y, color)
 
-    draw(ctx) {
-        super.draw(ctx)
-        ctx.beginPath()
-        ctx.rect(this._x - this._width / 2, this._y - this._height / 2, this._width, this._height)
-        ctx.fill()
-        ctx.stroke()
+        this.width = width
+        this.halfWidth = width * 0.5
+        this.height = height
+        this.halfHeight = height * 0.5
     }
 
     contains(x, y) {
-        const halfWidth = this._width * 0.5
-        const halfHeight = this._height * 0.5
-        return x >= this._x - halfWidth && x < this._x + halfWidth &&
-               y >= this._y - halfHeight && y < this._y + halfHeight
+        return x >= this.x - this.halfWidth  && x < this.x + this.halfWidth &&
+               y >= this.y - this.halfHeight && y < this.y + this.halfHeight
+    }
+
+    draw(ctx) {
+        ctx.fillStyle = this.color
+        ctx.beginPath()
+        ctx.rect(this.x - this.halfWidth, this.y - this.halfHeight, this.width, this.height)
+        ctx.fill()
+        if (this.isSelected) {
+            ctx.strokeStyle = 'white'
+            ctx.setLineDash([3])
+            ctx.lineWidth = 3
+            ctx.beginPath()
+            ctx.rect(this.x - this.halfWidth, this.y - this.halfHeight, this.width, this.height)
+            ctx.stroke()
+        }
     }
 
     toSVG() {
-        return `<rect x="${this._x}" y="${this._y}" width="${this._width}" height="${this._height}" fill="${this._fillColor}" stroke="${this._borderColor}" stroke-width="${this._lineWidth}" />`
+        return `<rect x="${this.x - this.halfWidth}" y="${this.y - this.halfHeight}" width="${this.width}" height="${this.height}" fill="${this.color}" />`
     }
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-    const canvas = document.getElementById('canvas')
-    const w = canvas.width  = window.innerWidth
-    const h = canvas.height = window.innerHeight
-    setup(canvas.getContext('2d'), w, h)
-});
